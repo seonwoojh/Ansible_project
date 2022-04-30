@@ -1,0 +1,35 @@
+---
+# vars file for common
+
+repo_set: # repo
+  pkg: https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+  safe:
+    name: remi-safe
+    mirror: http://cdn.remirepo.net/enterprise/7/safe/mirror
+  php74:
+    name: remi-php74
+    mirror: http://cdn.remirepo.net/enterprise/7/php74/mirror
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-remi
+
+wordpress: # 웹서버 설치
+  svc_port: 80
+  package:
+    packages_httpd: httpd,php,php-mysqlnd,mariadb,mariadb-server,python2-PyMySQL
+
+wordpress_version: 5.9.3 # 워드프레스 다운로드
+wordpress_filename: "wordpress-{{ wordpress_version }}.tar.gz"
+wordpress_url: "https://wordpress.org/{{ wordpress_filename }}"
+
+# Terraform으로 데이터베이스 삽입
+database: # 데이터베이스 로그인
+  svc_port: 3306
+  name: wordpress
+  user: adminx
+  pwd: P@ssw0rd
+
+database_source: wp-mariadb-server.mariadb.database.azure.com # 데이터베이스 소스
+database_collate: utf8_unicode_ci
+
+
+    
+

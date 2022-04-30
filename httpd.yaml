@@ -1,0 +1,5 @@
+---
+- hosts: all                       # hostname
+  become: True                 # sudo 권한
+  roles:                              # 역할 파일 로드
+    - common

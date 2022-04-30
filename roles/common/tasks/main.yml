@@ -1,0 +1,95 @@
+---
+# tasks file for common_Azure
+
+  - name: Repo Set_CentOS
+    block:
+      - name: Install Remi Repo Package # CentOS Remi Repo 추가
+        yum:
+          name: '{{ repo_set["pkg"] }}'
+          state: present
+          validate_certs: no
+      - name: Disable Remi php54 Repo # CentOS php54 리포지토리 비활성화
+        yum_repository:
+          name: '{{ repo_set["safe"]["name"] }}'
+          file: '{{ repo_set["safe"]["name"] }}'
+          mirrorlist: '{{ repo_set["safe"]["mirror"] }}'
+          description: '{{ repo_set["safe"]["name"] }}'
+          enabled: no
+      - name: Enable Remi php74 Repo  # CentOS php74 리포지토리 활성화
+        yum_repository:
+          name: '{{ repo_set["php74"]["name"] }}'
+          file: '{{ repo_set["php74"]["name"] }}'
+          mirrorlist: '{{ repo_set["php74"]["mirror"] }}'
+          description: '{{ repo_set["php74"]["name"] }}'
+          enabled: yes
+          gpgcheck: yes
+          gpgkey: '{{ repo_set["php74"]["gpgkey"] }}'
+    when: ansible_facts['distribution'] == "CentOS"
+    tags:
+      - wordpress
+      - centos
+
+  - name: Flush Handlers # 핸들러 즉시 활성화
+    meta: flush_handlers
+    tags:
+      - wordpress
+      - amazon_linux
+      - centos
+
+
+  - name: Install Web Service # 웹서버 설치
+    block:
+      - name: Install Apache, PHP, mariadb # 아파치, PHP74, DB 클라이언트 설치
+        yum:
+          name: '{{ wordpress["package"]["packages_httpd"] }}'
+          state: present
+      - name: Set httpd port # httpd 포트 변경
+        lineinfile:
+          path: /etc/httpd/conf/httpd.conf
+          regexp: '^Listen'
+          line: 'Listen {{ wordpress["svc_port"] }}'
+        notify: Restart httpd
+      - name: Start httpd service # httpd 서비스 시작
+        service:
+          name: httpd
+          state: started 
+          enabled: yes
+    tags:
+      - wordpress
+      - amazon_linux
+      - centos
+    
+
+
+  - name: Active Wordpress System for CentOS 7_Azure # 워드프레스 설치
+    block:
+      - name: Download Wordpress System for CentOS 7 # 워드프레스 다운로드
+        get_url:
+          url: '{{ wordpress_url }}'
+          dest: /home/azureuser
+      - name: Decompress Archive file for CentOS 7 # 압축 해제
+        unarchive:
+          src: '/home/azureuser/{{ wordpress_filename }}'
+          remote_src: yes 
+          dest: /var/www/html/
+          owner: apache 
+          group: apache
+    when: ansible_facts['distribution'] == "CentOS"
+    tags:
+      - wordpress
+      - centos
+
+  - name: Configure Database for Wordpress # 워드프레스 데이터베이스 세팅
+    block:
+    - name: Copy Database Configure File for Wordpress # 데이터베이스 설정파일 지정
+      template:
+        src: templates/wp-config.php.j2
+        dest: /var/www/html/wordpress/wp-config.php
+        owner: apache
+        group: apache
+    tags:
+      - wordpress
+      - amazon_linux
+      - centos
+
+

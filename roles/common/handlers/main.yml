@@ -1,0 +1,7 @@
+---
+# handlers file for common
+  - name: Restart httpd     # httpd 서비스 재시작
+    service:
+      name: httpd
+      state: restarted
+  
