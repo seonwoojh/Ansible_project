@@ -1,5 +1,11 @@
 ---
 # tasks file for common_Azure
+  - name: Flush Handlers # 핸들러 즉시 활성화
+    meta: flush_handlers
+    tags:
+      - wordpress
+      - amazon_linux
+      - centos
 
   - name: Repo Set_CentOS
     block:
@@ -24,18 +30,14 @@
           enabled: yes
           gpgcheck: yes
           gpgkey: '{{ repo_set["php74"]["gpgkey"] }}'
+      - name: Lockdown SELinux # SELinux 무력화, 미시행시 데이터베이스 연동불가
+        command: 
+          cmd: setenforce 0
+        notify: Restart httpd
     when: ansible_facts['distribution'] == "CentOS"
     tags:
       - wordpress
       - centos
-
-  - name: Flush Handlers # 핸들러 즉시 활성화
-    meta: flush_handlers
-    tags:
-      - wordpress
-      - amazon_linux
-      - centos
-
 
   - name: Install Web Service # 웹서버 설치
     block:
@@ -49,7 +51,17 @@
           regexp: '^Listen'
           line: 'Listen {{ wordpress["svc_port"] }}'
         notify: Restart httpd
-      - name: Start httpd service # httpd 서비스 시작
+      - name: Changes Wordpress # Default 페이지 워드프레스로 변경
+        lineinfile:
+          path: /etc/httpd/conf/httpd.conf
+          regexp: '^DocumentRoot "/var/www/html"'
+          line: 'DocumentRoot "/var/www/html/wordpress"'
+      - name: Changes php # Default 페이지 워드프레스로 변경(php)
+        lineinfile:
+          path: /etc/httpd/conf/httpd.conf
+          regexp: '^    DirectoryIndex index.html'
+          line: '    DirectoryIndex index.php'
+      - name: httpd Start # httpd Service start 
         service:
           name: httpd
           state: started 
@@ -91,5 +103,4 @@
       - wordpress
       - amazon_linux
       - centos
-
 
