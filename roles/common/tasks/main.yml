@@ -104,20 +104,19 @@
       - amazon_linux
       - centos
 
-- name: Install Web Service # 웹서버 설치
+  - name: Last # 웹서버 설치
     block:
-      - name: Changes Wordpress # Default 페이지 워드프레스로 변경
-        lineinfile:
-          path: /etc/httpd/conf/httpd.conf
-          regexp: '^DocumentRoot "/var/www/html"'
-          line: 'DocumentRoot "/var/www/html/wordpress"'
-      - name: Changes php # Default 페이지 워드프레스로 변경(php)
-        lineinfile:
-          path: /etc/httpd/conf/httpd.conf
-          regexp: '^    DirectoryIndex index.html'
-          line: '    DirectoryIndex index.php'
-      - name: httpd Start # httpd Service start 
-        service:
-          name: httpd
-          state: started 
-          enabled: yes
+    - name: Changes Wordpress # Default 페이지 워드프레스로 변경
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^DocumentRoot "/var/www/html"'
+        line: 'DocumentRoot "/var/www/html/wordpress"'
+    - name: Changes php # Default 페이지 워드프레스로 변경(php)
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^    DirectoryIndex index.html'
+        line: '    DirectoryIndex index.php'
+      service:
+        name: httpd
+        state: started 
+        enabled: yes
